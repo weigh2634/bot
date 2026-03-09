@@ -4,34 +4,37 @@ import time
 import threading
 from flask import Flask
 import os
+from collections import deque  # 引入雙向佇列，用來做記憶體自動代謝
 
 # ================= 參數設定區 =================
-# 這裡改用 os.environ.get，讓程式去 Render 的環境變數中讀取，保護資安
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
-# 設定要監聽的看板與關鍵字 (大小寫視為不同)
+# 設定要監聽的看板與關鍵字 (目前已升級為不分大小寫)
 TARGETS = [
-#    {'board': 'Stock', 'keyword': '散熱'},
+#    {'board': 'Stock', 'keyword': '黃金'},
 #    {'board': 'Stock', 'keyword': '晶圓'},
+#    {'board': 'Stock', 'keyword': '散熱'},
+#    {'board': 'Stock', 'keyword': 'PCB'},
+#    {'board': 'Coffee', 'keyword': '手沖'},
     {'board': 'Lifeismoney', 'keyword': 'goshare'},
     {'board': 'Lifeismoney', 'keyword': '情報'}
 ]
 
 # 檢查頻率 (秒)
 CHECK_INTERVAL = 300  # 5分鐘檢查一次
+# 每次檢查要往前翻幾頁 (預設 2 頁，防止熱門時段文章洗太快漏接)
+CHECK_PAGES = 2
 # ==============================================
 
-# 用來記錄已經通知過的文章網址，避免重複通知
-seen_articles = set()
+# 設定最大記憶容量為 1000 筆網址，超過會自動把最舊的擠掉，永遠不會爆記憶體！
+seen_articles = deque(maxlen=1000)
 
-# 建立 Flask 網頁伺服器
 app = Flask(__name__)
 
-# 這個簡單的網頁路由是為了讓 Render 保持服務運作，以及讓 UptimeRobot 來 ping
 @app.route('/')
 def home():
-    return "PTT Alarm Bot 正常運作中！"
+    return "PTT Alarm Bot 終極版正常運作中！"
 
 def send_telegram_message(message):
     """發送 Telegram 訊息"""
@@ -50,39 +53,51 @@ def send_telegram_message(message):
     except Exception as e:
         print(f"發送 Telegram 失敗: {e}")
 
-def fetch_ptt_board(board):
-    """爬取 PTT 指定看板的最新文章"""
+def fetch_ptt_board(board, pages=CHECK_PAGES):
+    """爬取 PTT 指定看板的最新 N 頁文章"""
     url = f"https://www.ptt.cc/bbs/{board}/index.html"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
-    # 加入 over18=1 的 cookie，以繞過八卦板等滿 18 歲的確認頁面
     cookies = {'over18': '1'}
+    articles = []
     
-    try:
-        response = requests.get(url, headers=headers, cookies=cookies, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        articles = []
-        for div in soup.find_all('div', class_='r-ent'):
-            title_element = div.find('div', class_='title').find('a')
-            if title_element:
-                title = title_element.text.strip()
-                link = "https://www.ptt.cc" + title_element['href']
-                articles.append({'title': title, 'link': link})
-        return articles
-    except Exception as e:
-        print(f"爬取看板 {board} 失敗: {e}")
-        return []
+    for i in range(pages):
+        try:
+            response = requests.get(url, headers=headers, cookies=cookies, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # 抓取當前頁面的文章
+            for div in soup.find_all('div', class_='r-ent'):
+                title_element = div.find('div', class_='title').find('a')
+                if title_element:
+                    title = title_element.text.strip()
+                    link = "https://www.ptt.cc" + title_element['href']
+                    articles.append({'title': title, 'link': link})
+            
+            # 尋找「上頁」的按鈕連結，準備抓下一輪
+            prev_link = soup.find('a', string=lambda text: text and '上頁' in text)
+            if prev_link:
+                url = "https://www.ptt.cc" + prev_link['href']
+                # 翻頁稍微停頓 1 秒，當個有禮貌的爬蟲，避免被 PTT 伺服器暫時封鎖
+                time.sleep(1) 
+            else:
+                break # 找不到上頁就提早結束
+                
+        except Exception as e:
+            print(f"爬取看板 {board} 第 {i+1} 頁失敗: {e}")
+            break
+            
+    return articles
 
 def run_bot():
     """機器人主要運作邏輯"""
-    print("啟動 PTT 關鍵字監聽機器人...")
-    send_telegram_message("🤖 PTT 雲端監聽機器人已啟動，不分大小寫比對模式上線！")
+    print("啟動 PTT 關鍵字監聽機器人 (終極版)...")
+    send_telegram_message("🤖 PTT 雲端監聽機器人已啟動！\n✅ 啟用多頁巡邏\n✅ 啟用不分大小寫比對\n✅ 啟用自動代謝記憶體")
     
     while True:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 開始檢查最新文章...")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 開始檢查最新 {CHECK_PAGES} 頁文章...")
         
         for target in TARGETS:
             board = target['board']
@@ -91,9 +106,10 @@ def run_bot():
             articles = fetch_ptt_board(board)
             
             for article in articles:
-                # 【修改這裡】將關鍵字與標題都轉成小寫後再比對
+                # 【防漏接與不分大小寫升級】將關鍵字與標題都轉成小寫比對
                 if keyword.lower() in article['title'].lower() and article['link'] not in seen_articles:
-                    seen_articles.add(article['link'])
+                    # 【記憶體升級】改用 append 放進 deque
+                    seen_articles.append(article['link'])
                     
                     message = (
                         f"🔔 PTT 關鍵字通知\n"
@@ -105,22 +121,16 @@ def run_bot():
                     send_telegram_message(message)
                     print(f"發現符合文章並已通知: {article['title']}")
                     
-            # 避免對 PTT 伺服器發送請求過快，每個板中間稍微暫停 2 秒
+            # 每個板中間稍微暫停 2 秒
             time.sleep(2)
             
         print(f"檢查完畢，休息 {CHECK_INTERVAL} 秒。")
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
-    # 使用背景執行緒來執行 PTT 爬蟲，才不會卡住網頁伺服器
     bot_thread = threading.Thread(target=run_bot)
-    # 將執行緒設為 daemon，這樣主程式結束時它也會跟著結束
     bot_thread.daemon = True 
     bot_thread.start()
     
-    # 啟動 Flask 網頁伺服器 (Render 預設會尋找 port 10000 左右，0.0.0.0 代表對外開放)
-    # 這裡抓取 Render 自動分配的 PORT 環境變數，若無則預設為 10000
     port = int(os.environ.get('PORT', 10000))
-
     app.run(host='0.0.0.0', port=port)
-
