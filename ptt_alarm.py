@@ -17,8 +17,8 @@ TARGETS = [
 #    {'board': 'Stock', 'keyword': '散熱'},
 #    {'board': 'Stock', 'keyword': 'PCB'},
 #    {'board': 'Coffee', 'keyword': '手沖'},
-    {'board': 'Lifeismoney', 'keyword': 'goshare'},
-    {'board': 'Lifeismoney', 'keyword': '情報'}
+#    {'board': 'Lifeismoney', 'keyword': 'goshare'},
+    {'board': 'Lifeismoney', 'keyword': 'goshare'}
 ]
 
 # 檢查頻率 (秒)
@@ -134,3 +134,4 @@ if __name__ == "__main__":
     
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
