@@ -12,9 +12,9 @@ TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 # 設定要監聽的看板與關鍵字 (大小寫視為不同)
 TARGETS = [
-    {'board': 'Stock', 'keyword': '散熱'},
-    {'board': 'Stock', 'keyword': '晶圓'},
-    {'board': 'Stock', 'keyword': '黃金'},
+#    {'board': 'Stock', 'keyword': '散熱'},
+#    {'board': 'Stock', 'keyword': '晶圓'},
+    {'board': 'Lifeismoney', 'keyword': 'goshare'},
     {'board': 'Lifeismoney', 'keyword': '情報'}
 ]
 
@@ -120,4 +120,5 @@ if __name__ == "__main__":
     # 啟動 Flask 網頁伺服器 (Render 預設會尋找 port 10000 左右，0.0.0.0 代表對外開放)
     # 這裡抓取 Render 自動分配的 PORT 環境變數，若無則預設為 10000
     port = int(os.environ.get('PORT', 10000))
+
     app.run(host='0.0.0.0', port=port)
