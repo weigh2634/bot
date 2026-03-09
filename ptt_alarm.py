@@ -79,7 +79,7 @@ def fetch_ptt_board(board):
 def run_bot():
     """機器人主要運作邏輯"""
     print("啟動 PTT 關鍵字監聽機器人...")
-    send_telegram_message("🤖 PTT 雲端監聽機器人已啟動並載入環境變數！")
+    send_telegram_message("🤖 PTT 雲端監聽機器人已啟動，不分大小寫比對模式上線！")
     
     while True:
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 開始檢查最新文章...")
@@ -91,7 +91,8 @@ def run_bot():
             articles = fetch_ptt_board(board)
             
             for article in articles:
-                if keyword in article['title'] and article['link'] not in seen_articles:
+                # 【修改這裡】將關鍵字與標題都轉成小寫後再比對
+                if keyword.lower() in article['title'].lower() and article['link'] not in seen_articles:
                     seen_articles.add(article['link'])
                     
                     message = (
@@ -122,3 +123,4 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
 
     app.run(host='0.0.0.0', port=port)
+
