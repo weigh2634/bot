@@ -16,7 +16,8 @@ TARGETS = [
 #    {'board': 'Stock', 'keyword': '晶圓'},
 #    {'board': 'Stock', 'keyword': '散熱'},
 #    {'board': 'TVCard', 'keyword': 'Streamer'},
-#    {'board': 'Gamesale', 'keyword': '世界'},
+    {'board': 'Gamesale', 'keyword': '起源'},
+    {'board': 'Gamesale', 'keyword': '空前盛會'},
     {'board': 'Lifeismoney', 'keyword': 'go share'},
     {'board': 'Lifeismoney', 'keyword': 'goshare'}
 ]
