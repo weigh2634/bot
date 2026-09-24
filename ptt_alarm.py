@@ -16,14 +16,14 @@ TARGETS = [
 #    {'board': 'Stock', 'keyword': '晶圓'},
 #    {'board': 'Stock', 'keyword': '散熱'},
 #    {'board': 'Gamesale', 'keyword': 'pro'},
-#    {'board': 'Gamesale', 'keyword': '起源'},
-#    {'board': 'Gamesale', 'keyword': '曠野之息'},
+#    {'board': 'Gamesale', 'keyword':  '起源'},
+    {'board': 'Gamesale', 'keyword': '狂熱'},
     {'board': 'Lifeismoney', 'keyword': 'go share'},
     {'board': 'Lifeismoney', 'keyword': 'goshare'}
 ]
 
 # 檢查頻率 (秒)
-CHECK_INTERVAL = 300  # 5分鐘檢查一次
+CHECK_INTERVAL = 360  # 6分鐘檢查一次
 # 每次檢查要往前翻幾頁 (預設 2 頁，防止熱門時段文章洗太快漏接)
 CHECK_PAGES = 2
 # ==============================================
