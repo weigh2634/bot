@@ -10,8 +10,6 @@ TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 TARGETS = [
-    #{'board': 'Gamesale', 'keyword': '狂熱'},
-    #{'board': 'Gamesale', 'keyword': '狂熱'},
     {'board': 'Gamesale', 'keyword': '狂熱'},
     {'board': 'Lifeismoney', 'keyword': 'go share'},
     {'board': 'Lifeismoney', 'keyword': 'goshare'}
@@ -81,6 +79,9 @@ def fetch_ptt_board(board, pages=CHECK_PAGES):
     
     for i in range(pages):
         try:
+            # 印出當前連線進度與目標 URL
+            print(f"[{board}] 發送第 {i+1}/{pages} 次請求 -> {url}")
+            
             response = scraper.get(url, cookies=cookies, timeout=15)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
