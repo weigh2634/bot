@@ -1,5 +1,7 @@
 import os
+import sys
 import time
+from datetime import datetime, timezone, timedelta
 import cloudscraper
 from bs4 import BeautifulSoup
 
@@ -16,6 +18,18 @@ TARGETS = [
 CHECK_PAGES = 2
 SEEN_FILE = 'seen_articles.txt'
 # ==============================================
+
+def is_sleep_time():
+    """判斷目前台灣時間是否處於勿擾時段 (23:00 - 06:00)"""
+    tz_taiwan = timezone(timedelta(hours=8))
+    now = datetime.now(tz_taiwan)
+    current_hour = now.hour
+
+    # 跨日區間判斷：23:00 至隔日 05:59
+    if current_hour >= 23 or current_hour < 6:
+        print(f"目前台灣時間為 {now.strftime('%Y-%m-%d %H:%M:%S')}，處於勿擾時段 (23:00 - 06:00)，跳過本次執行。")
+        return True
+    return False
 
 def load_seen_articles():
     """讀取已經發布過通知的文章連結"""
@@ -122,4 +136,8 @@ def main():
         print("本次未發現新關鍵字文章。")
 
 if __name__ == '__main__':
+    # 執行前檢查是否處於睡覺勿擾時段
+    if is_sleep_time():
+        sys.exit(0)
+        
     main()
