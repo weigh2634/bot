@@ -17,7 +17,7 @@ TARGETS = [
     {'board': 'Lifeismoney', 'keyword': 'goshare'}
 ]
 
-CHECK_PAGES = 2
+CHECK_PAGES = 1
 SEEN_FILE = 'seen_articles.txt'
 # ==============================================
 
