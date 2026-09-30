@@ -1,0 +1,35 @@
+name: PTT Keyword Monitor
+
+on:
+  schedule:
+    # 預設每 5 分鐘執行一次（尖峰時段可能有排隊延遲）
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # 支援在網頁上手動點擊立即測試
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下載專案代碼
+        uses: actions/checkout@v4
+
+      - name: 設定 Python 環境
+        uses: setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安裝必要套件
+        run: pip install requests beautifulsoup4
+
+      - name: 執行 PTT 爬蟲
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python ptt_alarm.py
+
+      - name: 自動保存已讀記錄回專案
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen_articles.txt || true
+          git diff --quiet && git diff --staged --quiet || (git commit -m "自動更新看過文章列表 [skip ci]" && git push)
