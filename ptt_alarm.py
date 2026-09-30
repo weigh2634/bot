@@ -1,6 +1,6 @@
 import os
 import time
-import requests
+import cloudscraper
 from bs4 import BeautifulSoup
 
 # ================= 參數設定區 =================
@@ -37,6 +37,7 @@ def send_telegram_message(message):
         print("未設定 Token 或 Chat ID！")
         return
 
+    import requests
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         'chat_id': TELEGRAM_CHAT_ID,
@@ -49,20 +50,22 @@ def send_telegram_message(message):
         print(f"發送 Telegram 失敗: {e}")
 
 def fetch_ptt_board(board, pages=CHECK_PAGES):
-    """爬取指定看板文章"""
+    """使用 cloudscraper 穿透防護爬取看板文章"""
+    scraper = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        }
+    )
+    
     url = f"https://www.ptt.cc/bbs/{board}/index.html"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': 'https://www.ptt.cc/bbs/index.html'
-    }
     cookies = {'over18': '1'}
     articles = []
     
     for i in range(pages):
         try:
-            response = requests.get(url, headers=headers, cookies=cookies, timeout=10)
+            response = scraper.get(url, cookies=cookies, timeout=15)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -93,6 +96,7 @@ def main():
         board = target['board']
         keyword = target['keyword']
         articles = fetch_ptt_board(board)
+        print(f"[{board}] 成功抓取到 {len(articles)} 篇文章")
         
         for article in articles:
             if keyword.lower() in article['title'].lower() and article['link'] not in seen_articles:
