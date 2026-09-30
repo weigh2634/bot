@@ -34,3 +34,4 @@ jobs:
           git add seen_articles.txt || true
           git diff --quiet && git diff --staged --quiet || (git commit -m "自動更新看過文章列表 [skip ci]" && git push)
 
+# refresh schedule
