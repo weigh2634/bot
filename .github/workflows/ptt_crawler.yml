@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: 安裝必要套件
-        run: pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4 cloudscraper
 
       - name: 執行 PTT 爬蟲
         env:
