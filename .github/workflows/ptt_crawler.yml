@@ -1,9 +1,9 @@
 name: PTT Keyword Monitor
 
 on:
-  schedule:
+  #schedule:
     # 預設每 5 分鐘執行一次（尖峰時段可能有排隊延遲）
-    - cron: '*/5 * * * *'
+  #  - cron: '*/5 * * * *'
   workflow_dispatch: # 支援在網頁上手動點擊立即測試
 
 jobs:
