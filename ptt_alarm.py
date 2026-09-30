@@ -26,7 +26,7 @@ def is_sleep_time():
     current_hour = now.hour
 
     # 跨日區間判斷：23:00 至隔日 05:59
-    if current_hour >= 15 or current_hour < 6:
+    if current_hour >= 23 or current_hour < 6:
         print(f"目前台灣時間為 {now.strftime('%Y-%m-%d %H:%M:%S')}，處於勿擾時段 (23:00 - 06:00)，跳過本次執行。")
         return True
     return False
