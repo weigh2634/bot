@@ -10,7 +10,7 @@ TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 TARGETS = [
-    {'board': 'Gamesale', 'keyword': '狂熱'},
+#    {'board': 'Gamesale', 'keyword': '狂熱'},
     {'board': 'Lifeismoney', 'keyword': 'go share'},
     {'board': 'Lifeismoney', 'keyword': 'goshare'}
 ]
